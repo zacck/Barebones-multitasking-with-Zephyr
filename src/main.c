@@ -44,6 +44,20 @@ struct app_event {
 // queu name, size of elements size of queue,
 K_MSGQ_DEFINE(app_msgq, sizeof(struct app_event), APP_EVENT_QUEUE_SIZE, 4);
 
+//separate work queue
+K_THREAD_STACK_DEFINE(app_stack_area, 2048);
+
+static struct k_work_q app_work_q;
+
+/*Work*/
+static struct k_work some_work;
+
+static void some_work_fn(struct k_work *work)
+{
+  LOG_INF("Separate thread Button pressed at %"PRIu32 "\n", k_cycle_get_32()); 
+
+}
+
 
 
 
@@ -103,12 +117,7 @@ static const struct gpio_dt_spec led3 = GPIO_DT_SPEC_GET(LED3_NODE, gpios);
 
 void button_pressed(const struct device *dev, struct gpio_callback *cb, uint32_t pins){
   LOG_INF("Button pressed at %"PRIu32 "\n", k_cycle_get_32()); 
-   struct app_event evt = {
-      .type = APP_EVENT_BUTTON,
-      .value = 8888,
-  };
-
-  k_msgq_put(&app_msgq, &evt, K_MSEC(4000));
+  k_work_submit_to_queue(&app_work_q, &some_work);
 }
 
 
@@ -180,8 +189,11 @@ int main(void) {
 			}
     // poll the event queue indefinitely
     k_msgq_get(&app_msgq, &evt, K_FOREVER);
+    
+    //start off system queue thread
+    k_work_queue_start(&app_work_q, app_stack_area, sizeof(app_stack_area), CONFIG_SYSTEM_WORKQUEUE_PRIORITY, NULL);
 
-    LOG_INF("Event type: %i \n", &evt.type);
+    k_work_init(&some_work,some_work_fn);
 
     switch (evt.type) {
     case APP_EVENT_TIMER:
