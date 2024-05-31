@@ -1,7 +1,10 @@
-Barebones Threading in Zephyr
+Barebones Threading in Zephyr as  Demo 
 
 
-Uses two threads one from a timer and second one from simulated data as sensor data.
+This code does the following 
 
-
-Accepts inputs and processes the inputs in the main loop
+- Sets Up 3 LEDS as our work indicators 
+- Sets up a Message Queue running on the System Queue
+- Fires a couple of timers to simulate data coming from Sensors and processes them
+- Listens to interrupts from a button and processes that event itself.
+- Generally a nifty break into Zephyrs RTOS features
