@@ -54,7 +54,13 @@ static struct k_work some_work;
 
 static void some_work_fn(struct k_work *work)
 {
-  LOG_INF("Separate thread Button pressed at %"PRIu32 "\n", k_cycle_get_32()); 
+  LOG_INF("Separate thread Button pressed at %"PRIu32  " Pushed work to main\n", k_cycle_get_32()); 
+   struct app_event evt = {
+      .type = APP_EVENT_BUTTON,
+      .value = 8888,
+  };
+
+  k_msgq_put(&app_msgq, &evt, K_MSEC(4000));
 
 }
 
